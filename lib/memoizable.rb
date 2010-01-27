@@ -21,7 +21,12 @@ module Memoizable
       read_so_far
     end
   end
-  CACHE = YAML.load(Memoizable.readFile(CACHEFILE).join)
+  cache=YAML.load(Memoizable.readFile(CACHEFILE).join)
+  if cache.respond_to? :has_key?
+    CACHE=cache
+  else
+    CACHE={}
+  end
   module ClassMethods
     def memoize(name)
       original = "__original__#{name}"
