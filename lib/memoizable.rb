@@ -1,7 +1,7 @@
 autoload :YAML, 'yaml'
 autoload :FileUtils, 'fileutils'
 module Memoizable
-  CACHEFILE="~/.memoizable/cache.yaml"
+  CACHEFILE||="~/.memoizable/cache.yaml"
   class << self
     def writeFile contents, filename, append=nil
       FileUtils.mkdir(File.expand_path(File.dirname(filename))) unless File.exist?(File.expand_path(File.dirname(filename)))
