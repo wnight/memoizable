@@ -22,10 +22,12 @@ module Memoizable
     end
   end
   cache=YAML.load(Memoizable.readFile(CACHEFILE).join)
-  if cache.respond_to? :has_key?
-    CACHE=cache
-  else
-    CACHE={}
+  unless CACHE
+    if cache.respond_to? :has_key?
+      CACHE=cache
+    else
+      CACHE={}
+    end
   end
   module ClassMethods
     def memoize(name)
