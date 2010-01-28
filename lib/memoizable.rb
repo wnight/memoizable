@@ -20,6 +20,9 @@ module Memoizable
       end
       read_so_far
     end
+    def writeCache
+      Memoizable.writeFile YAML.dump(CACHE), CACHEFILE
+    end
   end
   cache=YAML.load(Memoizable.readFile(CACHEFILE).join)
   unless CACHE
@@ -37,7 +40,6 @@ module Memoizable
         key= self.to_s.unpack("a*")<<name.to_s.unpack("a*")<<args
         unless CACHE.has_key? key
           CACHE[key] = send(original, *args)
-          Memoizable.writeFile YAML.dump(CACHE), CACHEFILE
         end
         CACHE[key]
       end
