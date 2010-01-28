@@ -1,7 +1,7 @@
 autoload :YAML, 'yaml'
 autoload :FileUtils, 'fileutils'
 module Memoizable
-  @cachefile||="~/.memoizable/cache.yaml"
+  CACHEFILE="~/.memoizable/cache.yaml"
   class << self
     def writeFile contents, filename, append=nil
       FileUtils.mkdir(File.expand_path(File.dirname(filename))) unless File.exist?(File.expand_path(File.dirname(filename)))
@@ -21,16 +21,14 @@ module Memoizable
       read_so_far
     end
     def writeCache
-      Memoizable.writeFile YAML.dump(@cache), @cachefile
+      Memoizable.writeFile YAML.dump(CACHE), CACHEFILE
     end
   end
-  cache=YAML.load(Memoizable.readFile(@cachefile).join)
-  unless @cache
-    if cache.respond_to? :has_key?
-      @cache=cache
-    else
-      @cache={}
-    end
+  cache=YAML.load(Memoizable.readFile(CACHEFILE).join)
+  if cache.respond_to? :has_key?
+    CACHE=cache
+  else
+    CACHE={}
   end
   module ClassMethods
     def memoize(name)
@@ -38,10 +36,10 @@ module Memoizable
       alias_method original, name
       define_method(name) do |*args|
         key= self.to_s.unpack("a*")<<name.to_s.unpack("a*")<<args
-        unless @cache.has_key? key
-          @cache[key] = send(original, *args)
+        unless CACHE.has_key? key
+          CACHE[key] = send(original, *args)
         end
-        @cache[key]
+        CACHE[key]
       end
     end
   end
