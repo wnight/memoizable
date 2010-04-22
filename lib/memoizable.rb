@@ -25,12 +25,11 @@ module Memoizable
     end
     #Determine if CACHE has an unexpired key
     #key must be the CACHE key to lookup, expire_time is the number of seconds a record is considered new, or nil
-    def has key, expire_time=nil
-      if expire_time.nil?
-        CACHE.has_key? key
-      else
-        CACHE.has_key?(key) and CACHE[key]
-      end
+    def has key, expire_time = nil
+      return false unless CACHE.has_key? key
+      return true unless expire_time
+      return false if Time.at(CACHE[key][1]) < (Time.now - expire_time)
+      true
     end
   end
   cache=YAML.load(Memoizable.readFile(CACHEFILE).join)
@@ -44,13 +43,11 @@ module Memoizable
       original = "__original__#{name}"
       alias_method original, name
       define_method(name) do |*args|
-        key= self.to_s.unpack("a*")<<name.to_s.unpack("a*")<<args
-        unless CACHE.has_key?(key)
-          CACHE[key] = [send(original, *args), Time.now]
+        key = [self.to_s.to_sym, name.to_sym, *args.collect {|arg| arg.dup }]
+        unless Memoizable.has(key, expire_time)
+          CACHE[key] = [send(original, *args), Time.now.to_i]
           Memoizable.writeFile YAML.dump(CACHE), CACHEFILE
         end
-        return CACHE[key][0] unless !expire_time.nil? and CACHE[key][1] < Time.now.-(expire_time)
-        CACHE[key] = [send(original, *args), Time.now]
         CACHE[key][0]
       end
     end
